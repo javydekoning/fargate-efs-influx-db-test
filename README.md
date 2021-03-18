@@ -29,5 +29,5 @@ tsbs_generate_data --use-case="devops" --seed=42 --scale=400 --timestamp-start="
 ## Load Data
 
 ```sh
-cat /tmp/influx-data.gz | gunzip | tsbs_load_timescaledb --user 'admin' --pass 'YouShouldNotDoThis!' --workers 2 --batch-size 10000
+cat /tmp/influx-data.gz | gunzip | tsbs_load_influx --urls "http://172.31.98.35:8086" --workers 2 --batch-size 10000
 ```
