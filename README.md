@@ -1,14 +1,33 @@
-# Welcome to your CDK TypeScript project!
+# Benchmark Inlux DB
 
-This is a blank project for TypeScript development with CDK.
+Using `Amazon Linux 2` (arm) on t4g.2xlarge. **Warning: you might want to increase the volume size when generating larger sized data for benchmarks.**
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+Install dependencies first:
 
-## Useful commands
+```sh
+sudo yum install -y golang git wget curl
+```
 
- * `npm run build`   compile typescript to js
- * `npm run watch`   watch for changes and compile
- * `npm run test`    perform the jest unit tests
- * `cdk deploy`      deploy this stack to your default AWS account/region
- * `cdk diff`        compare deployed stack with current state
- * `cdk synth`       emits the synthesized CloudFormation template
+## Install Time Series Benchmark Suite (TSBS)
+
+Install all binaries as per instructions [from tsbs GitHub page](https://github.com/timescale/tsbs#installation)
+
+```sh
+go get github.com/timescale/tsbs
+cd go/src/github.com/timescale/tsbs/cmd
+go get ./...
+go install ./...
+```
+
+## Generate Data
+
+```sh
+export PATH=~/go/bin:$PATH
+tsbs_generate_data --use-case="devops" --seed=42 --scale=400 --timestamp-start="2021-01-01T00:00:00Z" --timestamp-end="2021-01-02T00:00:00Z" --log-interval="10s" --format="influx" | gzip > /tmp/influx-data.gz
+```
+
+## Load Data
+
+```sh
+cat /tmp/influx-data.gz | gunzip | tsbs_load_timescaledb --user 'admin' --pass 'YouShouldNotDoThis!' --workers 2 --batch-size 10000
+```
